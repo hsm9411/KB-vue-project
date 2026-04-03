@@ -1,0 +1,9 @@
+{
+  "budget": [
+    { "id": "1", "date": "2026-04-07", "type": "income", "category": "월급", "amount": 3000000, "memo": "4월 급여" },
+    { "id": "2", "date": "2026-04-08", "type": "expense", "category": "식비", "amount": 15000, "memo": "점심 식사" }
+  ],
+  "incomeCategory": ["월급", "용돈", "이자", "기타"],
+  "expenseCategory": ["식비", "교통비", "유흥", "공과금", "기타"],
+  "profile": { "name": "KB수강생", "email": "kb_student@kb.com" }
+}
