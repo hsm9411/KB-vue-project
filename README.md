@@ -7,21 +7,17 @@
 
 ## 📸 미리보기 (Screenshots)
 
-### 1. 메인 대시보드 (Dashboard)
-이번 달의 수입, 지출, 순이익을 요약하여 보여주며, 최근 거래 내역을 빠르게 확인할 수 있습니다. 우측 하단의 **+ 버튼(FAB)**을 통해 어디서든 빠르게 내역을 추가할 수 있습니다.
-![대시보드](./public/img/dashboard.png)
+<details>
+<summary><b>📷 클릭하여 실행 화면 확인하기</b></summary>
+<br>
 
-### 2. 거래 내역 조회 (History)
-전체 거래 내역을 테이블 형태로 조회하며, '수입'과 '지출' 버튼을 통해 원하는 내역만 필터링하여 볼 수 있습니다. 각 항목의 수정(Pencil) 및 삭제(Trash) 기능을 지원합니다.
-![내역 조회](./public/img/history.png)
+| 1. 메인 대시보드 (Dashboard) | 2. 거래 내역 조회 (History) |
+| :---: | :---: |
+| <img src="./public/img/dashboard.png" width="400"> | <img src="./public/img/history.png" width="400"> |
+| **3. 거래 등록 및 수정 (Form)** | **4. 설정 및 프로필 (Profile)** |
+| <img src="./public/img/transaction_form.png" width="400"> | <img src="./public/img/profile.png" width="400"> |
 
-### 3. 거래 등록 및 수정 (Transaction Form)
-날짜, 구분, 카테고리, 금액, 메모를 입력할 수 있는 폼입니다. '수입'과 '지출' 선택에 따라 선택 가능한 카테고리가 동적으로 변경됩니다.
-![등록 폼](./public/img/transaction_form.png)
-
-### 4. 설정 및 프로필 (Profile)
-사용자의 이름과 이메일을 확인하고 수정할 수 있는 개인화된 공간입니다.
-![프로필](./public/img/profile.png)
+</details>
 
 ---
 
