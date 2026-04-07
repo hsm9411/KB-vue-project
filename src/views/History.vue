@@ -46,11 +46,11 @@ const deleteTransaction = async (id) => {
 
 <template>
   <div class="history-view fade-in">
-    <div class="header mb-4">
-      <h4 class="fw-bold mb-3">거래 내역 조회</h4>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+      <h2 class="fw-bold mb-0">전체 거래 내역</h2>
 
       <!-- Styled Segmented Filter -->
-      <div class="filter-segment d-flex bg-white-50 p-1 rounded-4 shadow-sm border border-light">
+      <div class="filter-segment d-flex bg-white p-1 rounded-4 shadow-sm border border-light" style="min-width: 300px;">
         <button
           v-for="f in ['all', 'income', 'expense']"
           :key="f"
@@ -63,12 +63,11 @@ const deleteTransaction = async (id) => {
       </div>
     </div>
 
-    <!-- Grouped Transactions by Date -->
-    <div v-if="filteredBudgets.length === 0" class="text-center py-5 text-muted bg-white rounded-4 shadow-sm border border-light">
-      <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
-      해당 조건의 거래 내역이 없습니다.
-    </div>
-    <div v-else class="transaction-list">
+    <!-- Mobile-First List (Hidden on md and above) -->
+    <div class="d-md-none transaction-list">
+      <div v-if="filteredBudgets.length === 0" class="text-center py-5 text-muted bg-white rounded-4 shadow-sm border border-light">
+        거래 내역이 없습니다.
+      </div>
       <div
         v-for="item in filteredBudgets"
         :key="item.id"
@@ -84,7 +83,7 @@ const deleteTransaction = async (id) => {
         <div class="flex-grow-1 overflow-hidden me-2">
           <div class="d-flex align-items-center">
             <h6 class="fw-bold mb-0 text-truncate">{{ item.category }}</h6>
-            <small class="ms-2 text-muted-extra small">{{ item.date }}</small>
+            <small class="ms-2 text-muted small extra-small">{{ item.date }}</small>
           </div>
           <small class="text-muted d-block text-truncate small">{{ item.memo || '기록 없음' }}</small>
         </div>
@@ -103,6 +102,66 @@ const deleteTransaction = async (id) => {
         </div>
       </div>
     </div>
+
+    <!-- Desktop Data Table (Visible on md and above) -->
+    <div class="d-none d-md-block card border-0 shadow-sm rounded-4 overflow-hidden">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="bg-light bg-opacity-50">
+            <tr class="border-bottom text-muted">
+              <th class="ps-4 py-3 fw-bold small text-uppercase">날짜</th>
+              <th class="py-3 fw-bold small text-uppercase">거래 유형</th>
+              <th class="py-3 fw-bold small text-uppercase">카테고리</th>
+              <th class="py-3 fw-bold small text-uppercase">메모</th>
+              <th class="py-3 fw-bold small text-uppercase text-end">금액</th>
+              <th class="py-3 fw-bold small text-uppercase text-center pe-4">액션</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="filteredBudgets.length === 0">
+              <td colspan="6" class="text-center py-5 text-muted">표시할 거래 내역이 없습니다.</td>
+            </tr>
+            <tr v-for="item in filteredBudgets" :key="item.id" class="border-bottom last-no-border">
+              <td class="ps-4 py-4 text-muted small">{{ item.date }}</td>
+              <td>
+                <span
+                  class="badge rounded-pill px-3 py-2 fw-semibold"
+                  :class="item.type === 'income' ? 'bg-success-subtle text-success border border-success border-opacity-25' : 'bg-danger-subtle text-danger border border-danger border-opacity-25'"
+                >
+                  {{ item.type === 'income' ? '수입' : '지출' }}
+                </span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div
+                    class="category-icon-small rounded-circle me-3 d-flex align-items-center justify-content-center"
+                    :class="item.type === 'income' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
+                    style="width: 36px; height: 36px;"
+                  >
+                    <i :class="getCategoryIcon(item.category)" class="fs-6"></i>
+                  </div>
+                  <span class="fw-bold">{{ item.category }}</span>
+                </div>
+              </td>
+              <td class="text-muted">{{ item.memo || '-' }}</td>
+              <td class="text-end pe-3 fw-bold" :class="item.type === 'income' ? 'text-success' : 'text-danger'">
+                {{ item.type === 'income' ? '+' : '-' }} {{ formatCurrency(item.amount) }}
+              </td>
+              <td class="text-center pe-4">
+                <div class="d-flex justify-content-center gap-2">
+                  <router-link :to="`/transaction/edit/${item.id}`" class="btn btn-outline-secondary btn-sm px-3 rounded-3">
+                    <i class="bi bi-pencil me-1"></i> 수정
+                  </router-link>
+                  <button @click="deleteTransaction(item.id)" class="btn btn-outline-danger btn-sm px-3 rounded-3">
+                    <i class="bi bi-trash me-1"></i> 삭제
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -116,8 +175,7 @@ const deleteTransaction = async (id) => {
 }
 
 .transaction-tile {
-  border: 1px solid #f8f9fa;
-  animation: slideIn 0.3s ease-out;
+  border: 1px solid transparent;
 }
 
 .btn-icon-only {
@@ -130,18 +188,12 @@ const deleteTransaction = async (id) => {
   background-color: #f8f9fa;
 }
 
-.btn-icon-only:active {
-  background-color: #e9ecef;
-}
-
-.text-muted-extra {
+.extra-small {
   font-size: 0.7rem;
-  color: #adb5bd;
 }
 
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(-10px); }
-  to { opacity: 1; transform: translateX(0); }
+.last-no-border:last-child {
+  border-bottom: none !important;
 }
 
 .fade-in {
