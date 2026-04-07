@@ -26,69 +26,115 @@ const handleUpdate = async () => {
 </script>
 
 <template>
-  <div class="profile max-width-600 mx-auto">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white py-3 text-center">
-        <div
-          class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3"
-          style="width: 80px; height: 80px; font-size: 32px;"
-        >
-          <i class="bi bi-person"></i>
+  <div class="profile-view fade-in">
+    <div class="header mb-5 text-center pt-4">
+      <div
+        class="profile-avatar-large mx-auto bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-lg position-relative mb-3"
+        style="width: 100px; height: 100px; font-size: 40px;"
+      >
+        <i class="bi bi-person"></i>
+        <div class="camera-badge bg-white text-primary rounded-circle shadow-sm position-absolute" style="bottom: 0; right: 0; width: 32px; height: 32px; font-size: 16px; display: flex; align-items: center; justify-content: center;">
+          <i class="bi bi-camera-fill"></i>
         </div>
-        <h4 class="mb-0 fw-bold">사용자 설정 및 프로필</h4>
       </div>
-      <div class="card-body p-4">
+      <h4 class="fw-bold mb-1">{{ formData.name || 'KB수강생' }}</h4>
+      <small class="text-muted">{{ formData.email || 'kb_student@kb.com' }}</small>
+    </div>
+
+    <div class="settings-container">
+      <h6 class="fw-bold small text-muted text-uppercase mb-3 ps-2">계정 설정</h6>
+
+      <div class="form-container bg-white rounded-4 shadow-sm p-4 border border-light mb-4">
         <form @submit.prevent="handleUpdate">
-          <!-- Name -->
           <div class="mb-3">
-            <label for="name" class="form-label fw-bold">이름</label>
+            <label for="name" class="form-label fw-bold small text-muted text-uppercase mb-2">사용자 이름</label>
             <input
               type="text"
-              class="form-control"
+              class="form-control form-control-lg rounded-3 border-light bg-light"
               id="name"
               v-model="formData.name"
-              placeholder="이름을 입력하세요"
               required
             />
           </div>
 
-          <!-- Email -->
           <div class="mb-4">
-            <label for="email" class="form-label fw-bold">이메일</label>
+            <label for="email" class="form-label fw-bold small text-muted text-uppercase mb-2">이메일 주소</label>
             <input
               type="email"
-              class="form-control"
+              class="form-control form-control-lg rounded-3 border-light bg-light"
               id="email"
               v-model="formData.email"
-              placeholder="이메일을 입력하세요"
               required
             />
           </div>
 
-          <!-- Submit Button -->
-          <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
-            <i class="bi bi-save me-2"></i>프로필 저장하기
+          <button type="submit" class="btn btn-primary w-100 py-3 rounded-3 shadow-sm fw-bold">
+            프로필 정보 저장
           </button>
         </form>
       </div>
-    </div>
 
-    <!-- Info Card -->
-    <div class="card border-0 shadow-sm mt-4 bg-light">
-      <div class="card-body">
-        <h6 class="fw-bold mb-3"><i class="bi bi-info-circle me-2"></i>도움말</h6>
-        <ul class="small text-muted mb-0">
-          <li>사용자 이름과 이메일은 모든 기기에서 동기화됩니다.</li>
-          <li>이메일 형식에 맞춰 입력해 주세요.</li>
-          <li>변경 사항은 즉시 반영됩니다.</li>
-        </ul>
+      <h6 class="fw-bold small text-muted text-uppercase mb-3 ps-2">시스템</h6>
+      <div class="list-group rounded-4 shadow-sm border border-light bg-white mb-4">
+        <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-bottom border-light">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-bell-fill text-warning me-3"></i>
+            <span>알림 설정</span>
+          </div>
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" checked />
+          </div>
+        </div>
+        <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-bottom border-light">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-shield-lock-fill text-success me-3"></i>
+            <span>보안 및 비밀번호</span>
+          </div>
+          <i class="bi bi-chevron-right text-muted small"></i>
+        </div>
+        <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-question-circle-fill text-info me-3"></i>
+            <span>고객 센터</span>
+          </div>
+          <i class="bi bi-chevron-right text-muted small"></i>
+        </div>
       </div>
+
+      <button type="button" class="btn btn-outline-danger w-100 py-3 rounded-4 border-2 fw-bold">
+        <i class="bi bi-box-arrow-right me-2"></i>로그아웃
+      </button>
     </div>
   </div>
 </template>
 
 <style scoped>
-.max-width-600 {
-  max-width: 600px;
+.form-control-lg {
+  font-size: 1rem;
+  padding: 0.8rem 1rem;
+}
+
+.profile-avatar-large {
+  background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+}
+
+.list-group-item {
+  border: none;
+  background-color: transparent;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.list-group-item:active {
+  background-color: #f8f9fa;
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
