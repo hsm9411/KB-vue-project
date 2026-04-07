@@ -3,6 +3,10 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useBudgetStore } from '../store/budgetStore';
 import budgetApi from '../api/budgetApi';
+import BaseButton from '../components/ui/BaseButton.vue';
+import BaseInput from '../components/ui/BaseInput.vue';
+import BaseSelect from '../components/ui/BaseSelect.vue';
+import BaseCard from '../components/ui/BaseCard.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -69,7 +73,7 @@ const handleSubmit = async () => {
   <div class="transaction-form-view fade-in">
     <!-- Breadcrumb / Title -->
     <div class="d-flex align-items-center mb-4 pt-md-2">
-      <button @click="router.back()" class="btn btn-icon-only text-secondary me-3 shadow-sm d-md-none">
+      <button @click="router.back()" class="btn-back-mobile text-secondary me-3 shadow-sm d-md-none">
         <i class="bi bi-chevron-left fs-4"></i>
       </button>
       <nav aria-label="breadcrumb" class="d-none d-md-block">
@@ -84,8 +88,11 @@ const handleSubmit = async () => {
 
     <div class="row g-4 justify-content-center">
       <div class="col-12 col-md-8 col-lg-6">
-        <div class="form-container bg-white rounded-4 shadow-lg p-4 p-md-5 border border-light">
-          <h2 class="fw-bold mb-4 d-none d-md-block text-center">{{ isEditMode ? '거래 내역 수정' : '새로운 거래 등록' }}</h2>
+        <BaseCard shadow="shadow-lg" padding="p-4 p-md-5">
+          <template #header>
+            <h2 class="fw-bold mb-0 d-none d-md-block text-center">{{ isEditMode ? '거래 내역 수정' : '새로운 거래 등록' }}</h2>
+          </template>
+
           <form @submit.prevent="handleSubmit">
             <!-- Styled Segmented Type Switcher -->
             <div class="mb-4">
@@ -94,16 +101,16 @@ const handleSubmit = async () => {
                 <button
                   type="button"
                   @click="formData.type = 'income'; formData.category = '';"
-                  class="btn flex-grow-1 border-0 py-3 rounded-4 transition-all"
-                  :class="formData.type === 'income' ? 'btn-success text-white shadow-sm fw-bold' : 'text-muted'"
+                  class="btn-segment flex-grow-1 border-0 py-3 rounded-4 transition-all"
+                  :class="formData.type === 'income' ? 'bg-success text-white shadow-sm fw-bold' : 'text-muted'"
                 >
                   <i class="bi bi-arrow-down-left-circle me-1"></i> 수입
                 </button>
                 <button
                   type="button"
                   @click="formData.type = 'expense'; formData.category = '';"
-                  class="btn flex-grow-1 border-0 py-3 rounded-4 transition-all"
-                  :class="formData.type === 'expense' ? 'btn-danger text-white shadow-sm fw-bold' : 'text-muted'"
+                  class="btn-segment flex-grow-1 border-0 py-3 rounded-4 transition-all"
+                  :class="formData.type === 'expense' ? 'bg-danger text-white shadow-sm fw-bold' : 'text-muted'"
                 >
                   <i class="bi bi-arrow-up-right-circle me-1"></i> 지출
                 </button>
@@ -113,11 +120,10 @@ const handleSubmit = async () => {
             <div class="row g-3">
               <!-- Date Input -->
               <div class="col-md-6 mb-3">
-                <label for="date" class="form-label fw-bold small text-muted text-uppercase mb-2">날짜</label>
-                <input
-                  type="date"
-                  class="form-control form-control-lg rounded-3 border-light bg-light"
+                <BaseInput
                   id="date"
+                  label="날짜"
+                  type="date"
                   v-model="formData.date"
                   required
                 />
@@ -125,80 +131,74 @@ const handleSubmit = async () => {
 
               <!-- Category Dropdown -->
               <div class="col-md-6 mb-3">
-                <label for="category" class="form-label fw-bold small text-muted text-uppercase mb-2">카테고리</label>
-                <select
-                  class="form-select form-select-lg rounded-3 border-light bg-light"
+                <BaseSelect
                   id="category"
+                  label="카테고리"
+                  :options="categories"
+                  placeholder="카테고리를 선택하세요"
                   v-model="formData.category"
                   required
-                >
-                  <option value="" disabled>카테고리를 선택하세요</option>
-                  <option v-for="cat in categories" :key="cat" :value="cat">
-                    {{ cat }}
-                  </option>
-                </select>
+                />
               </div>
 
               <!-- Amount Input -->
               <div class="col-12 mb-3">
-                <label for="amount" class="form-label fw-bold small text-muted text-uppercase mb-2">금액 (원)</label>
-                <div class="input-group input-group-lg">
-                  <span class="input-group-text border-light bg-light text-muted">₩</span>
-                  <input
-                    type="number"
-                    class="form-control form-control-lg rounded-end-3 border-light bg-light fw-bold"
-                    id="amount"
-                    v-model.number="formData.amount"
-                    placeholder="0"
-                    required
-                  />
-                </div>
+                <BaseInput
+                  id="amount"
+                  label="금액 (원)"
+                  type="number"
+                  v-model.number="formData.amount"
+                  placeholder="0"
+                  required
+                />
               </div>
 
               <!-- Memo Input -->
               <div class="col-12 mb-4 mb-md-5">
-                <label for="memo" class="form-label fw-bold small text-muted text-uppercase mb-2">메모 (선택)</label>
-                <textarea
-                  class="form-control form-control-lg rounded-3 border-light bg-light"
-                  id="memo"
-                  rows="4"
-                  v-model="formData.memo"
-                  placeholder="지출 내역에 대해 간단히 메모해 보세요"
-                ></textarea>
+                <div class="base-input-container">
+                  <label for="memo" class="form-label fw-bold small text-muted text-uppercase mb-2 d-block">메모 (선택)</label>
+                  <textarea
+                    class="form-control form-control-lg rounded-3 border-light bg-light"
+                    id="memo"
+                    rows="4"
+                    v-model="formData.memo"
+                    placeholder="지출 내역에 대해 간단히 메모해 보세요"
+                  ></textarea>
+                </div>
               </div>
             </div>
 
             <!-- Full-Width Bottom Button (Mobile) or Inline Button (Desktop) -->
             <div class="d-none d-md-flex gap-3">
-              <button type="button" @click="router.back()" class="btn btn-outline-secondary btn-lg flex-grow-1 py-3 rounded-4 fw-bold border-2">취소</button>
-              <button type="submit" class="btn btn-primary btn-lg flex-grow-1 py-3 rounded-4 shadow fw-bold">
+              <BaseButton variant="outline-secondary" size="lg" isFullWidth @click="router.back()">취소</BaseButton>
+              <BaseButton variant="primary" size="lg" isFullWidth type="submit">
                 <i class="bi bi-save me-2"></i>{{ isEditMode ? '수정 완료' : '등록 완료' }}
-              </button>
+              </BaseButton>
             </div>
 
             <div class="fixed-bottom p-4 d-md-none" style="z-index: 1050; max-width: 480px; margin: 0 auto; left: 0; right: 0;">
-              <button type="submit" class="btn btn-primary btn-lg w-100 py-3 rounded-4 shadow-lg fw-bold">
+              <BaseButton variant="primary" size="lg" isFullWidth type="submit" shadow="shadow-lg">
                 <i class="bi bi-save me-2"></i>{{ isEditMode ? '내용 수정하기' : '거래 등록하기' }}
-              </button>
+              </BaseButton>
             </div>
           </form>
-        </div>
+        </BaseCard>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.form-control-lg, .form-select-lg {
-  font-size: 1rem;
-  padding: 0.8rem 1rem;
-}
-
 .type-segment {
   background-color: #f1f3f5;
 }
 
-.btn-icon-only {
+.btn-segment {
+  background: transparent;
+  outline: none;
+}
+
+.btn-back-mobile {
   width: 44px;
   height: 44px;
   padding: 0;
@@ -207,6 +207,20 @@ const handleSubmit = async () => {
   justify-content: center;
   border-radius: 12px;
   background-color: white;
+  border: none;
+}
+
+.form-control-lg {
+  font-size: 1rem;
+  padding: 0.8rem 1rem;
+  border-width: 2px;
+}
+
+.form-control:focus {
+  background-color: #fff !important;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+  outline: none;
 }
 
 .transition-all {
