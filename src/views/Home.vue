@@ -2,6 +2,8 @@
 import { computed } from 'vue';
 import { useBudgetStore } from '../store/budgetStore';
 import { useProfileStore } from '../store/profileStore';
+import BaseButton from '../components/ui/BaseButton.vue';
+import BaseCard from '../components/ui/BaseCard.vue';
 
 const budgetStore = useBudgetStore();
 const profileStore = useProfileStore();
@@ -39,8 +41,10 @@ const getCategoryIcon = (category) => {
         <h2 class="fw-bold mb-1">대시보드</h2>
         <p class="text-muted mb-0">환영합니다, {{ userName }}님! 오늘은 어떤 지출이 있으셨나요?</p>
       </div>
-      <router-link to="/transaction/add" class="btn btn-primary px-4 py-2 rounded-3 shadow-sm d-flex align-items-center">
-        <i class="bi bi-plus-lg me-2"></i>새 거래 추가
+      <router-link to="/transaction/add">
+        <BaseButton variant="primary" size="lg" class="px-4">
+          <i class="bi bi-plus-lg me-2"></i>새 거래 추가
+        </BaseButton>
       </router-link>
     </header>
 
@@ -55,11 +59,11 @@ const getCategoryIcon = (category) => {
       </div>
     </header>
 
-    <!-- Summary Cards: Stacked on Mobile, 3 Columns on Desktop -->
+    <!-- Summary Cards -->
     <div class="row g-4 mb-5">
-      <!-- Main Balance Card: Full width on mobile, 2 cols on tablet, 1/3 on desktop -->
+      <!-- Main Balance Card -->
       <div class="col-12 col-lg-4 order-lg-2">
-        <div class="balance-card bg-primary text-white p-4 rounded-4 shadow-lg h-100 d-flex flex-column justify-content-between">
+        <BaseCard variant="primary" shadow="shadow-lg" padding="p-4" class="text-white border-0 balance-card h-100 d-flex flex-column justify-content-between">
           <div class="mb-4">
             <small class="text-white-50">현재 총 잔액</small>
             <h2 class="fw-bold mb-0 mt-1">{{ formatCurrency(netIncome) }}</h2>
@@ -76,12 +80,12 @@ const getCategoryIcon = (category) => {
               </div>
             </div>
           </div>
-        </div>
+        </BaseCard>
       </div>
 
       <!-- Quick Income Card (Desktop Only) -->
       <div class="col-md-6 col-lg-4 d-none d-md-block">
-        <div class="summary-card bg-white p-4 rounded-4 shadow-sm h-100 border border-light border-opacity-10 d-flex align-items-center">
+        <BaseCard class="h-100 d-flex align-items-center">
           <div class="icon-box bg-success-subtle text-success rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
             <i class="bi bi-arrow-down-left-circle fs-2"></i>
           </div>
@@ -89,12 +93,12 @@ const getCategoryIcon = (category) => {
             <small class="text-muted d-block">이번 달 총 수입</small>
             <h4 class="fw-bold mb-0 text-success">{{ formatCurrency(totalIncome) }}</h4>
           </div>
-        </div>
+        </BaseCard>
       </div>
 
       <!-- Quick Expense Card (Desktop Only) -->
       <div class="col-md-6 col-lg-4 d-none d-md-block">
-        <div class="summary-card bg-white p-4 rounded-4 shadow-sm h-100 border border-light border-opacity-10 d-flex align-items-center">
+        <BaseCard class="h-100 d-flex align-items-center">
           <div class="icon-box bg-danger-subtle text-danger rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
             <i class="bi bi-arrow-up-right-circle fs-2"></i>
           </div>
@@ -102,11 +106,11 @@ const getCategoryIcon = (category) => {
             <small class="text-muted d-block">이번 달 총 지출</small>
             <h4 class="fw-bold mb-0 text-danger">{{ formatCurrency(totalExpense) }}</h4>
           </div>
-        </div>
+        </BaseCard>
       </div>
     </div>
 
-    <!-- Content Grid: Transactions and Potential Charts/Insights -->
+    <!-- Content Grid -->
     <div class="row g-5">
       <!-- Recent Transactions Section -->
       <div class="col-12 col-lg-7">
@@ -120,39 +124,43 @@ const getCategoryIcon = (category) => {
           거래 내역이 없습니다.
         </div>
         <div v-else class="transaction-list">
-          <div
+          <BaseCard
             v-for="item in recentTransactions"
             :key="item.id"
-            class="transaction-tile d-flex align-items-center bg-white p-3 p-md-4 rounded-4 shadow-sm mb-3"
+            class="mb-3"
+            padding="p-3 p-md-4"
+            noBorder
           >
-            <div
-              class="category-icon rounded-4 me-3 d-flex align-items-center justify-content-center"
-              :class="item.type === 'income' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
-              style="width: 52px; height: 52px; flex-shrink: 0;"
-            >
-              <i :class="getCategoryIcon(item.category)" class="fs-3"></i>
+            <div class="d-flex align-items-center">
+              <div
+                class="category-icon rounded-4 me-3 d-flex align-items-center justify-content-center"
+                :class="item.type === 'income' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
+                style="width: 52px; height: 52px; flex-shrink: 0;"
+              >
+                <i :class="getCategoryIcon(item.category)" class="fs-3"></i>
+              </div>
+              <div class="flex-grow-1 overflow-hidden">
+                <h6 class="fw-bold mb-0 text-truncate">{{ item.category }}</h6>
+                <small class="text-muted d-block text-truncate">{{ item.memo || item.date }}</small>
+              </div>
+              <div class="text-end ms-2" :class="item.type === 'income' ? 'text-success fw-bold' : 'text-danger fw-bold'">
+                <span class="fs-5">{{ item.type === 'income' ? '+' : '-' }} {{ formatCurrency(item.amount) }}</span>
+              </div>
             </div>
-            <div class="flex-grow-1 overflow-hidden">
-              <h6 class="fw-bold mb-0 text-truncate">{{ item.category }}</h6>
-              <small class="text-muted d-block text-truncate">{{ item.memo || item.date }}</small>
-            </div>
-            <div class="text-end ms-2" :class="item.type === 'income' ? 'text-success fw-bold' : 'text-danger fw-bold'">
-              <span class="fs-5">{{ item.type === 'income' ? '+' : '-' }} {{ formatCurrency(item.amount) }}</span>
-            </div>
-          </div>
+          </BaseCard>
         </div>
       </div>
 
       <!-- Quick Analysis / Tips Section (Desktop Only) -->
       <div class="col-12 col-lg-5 d-none d-lg-block">
         <h5 class="fw-bold mb-4">금융 리포트 인사이트</h5>
-        <div class="card border-0 rounded-4 shadow-sm overflow-hidden mb-4">
-          <div class="card-body p-4 bg-primary text-white bg-opacity-10 border-start border-primary border-5">
+        <BaseCard padding="p-0" shadow="shadow-sm" class="mb-4 overflow-hidden border-0">
+          <div class="p-4 bg-primary text-white bg-opacity-10 border-start border-primary border-5">
             <h6 class="fw-bold text-primary mb-2">지출 분석 알림</h6>
             <p class="small text-dark mb-0">식비 지출이 지난주보다 15% 증가했습니다. 건강한 외식 습관을 유지해 보세요!</p>
           </div>
-        </div>
-        <div class="card border-0 rounded-4 shadow-sm bg-white p-4">
+        </BaseCard>
+        <BaseCard padding="p-4">
           <h6 class="fw-bold mb-3">카테고리별 비중</h6>
           <div class="d-flex flex-column gap-3">
             <div v-for="(cat, index) in ['식비', '교통비', '유흥']" :key="index">
@@ -165,40 +173,26 @@ const getCategoryIcon = (category) => {
               </div>
             </div>
           </div>
-        </div>
+        </BaseCard>
       </div>
     </div>
 
-    <!-- Mobile FAB (Bottom Nav 바로 위) -->
-    <router-link
-      to="/transaction/add"
-      class="fab-button btn btn-primary rounded-circle shadow-lg position-fixed d-md-none d-flex align-items-center justify-content-center"
-      style="width: 60px; height: 60px; bottom: 85px; right: 20px; z-index: 1000;"
-    >
-      <i class="bi bi-plus-lg fs-2"></i>
+    <!-- Mobile FAB -->
+    <router-link to="/transaction/add" class="fab-button position-fixed d-md-none" style="bottom: 85px; right: 20px; z-index: 1000;">
+      <BaseButton variant="primary" size="lg" class="rounded-circle shadow-lg" style="width: 60px; height: 60px; padding: 0;">
+        <i class="bi bi-plus-lg fs-2"></i>
+      </BaseButton>
     </router-link>
   </div>
 </template>
 
 <style scoped>
 .balance-card {
-  background: linear-gradient(135deg, #0d6efd 0%, #0046b8 100%);
-  border: none;
+  background: linear-gradient(135deg, #0d6efd 0%, #0046b8 100%) !important;
 }
 
 .border-white-10 {
   border-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-.transaction-tile {
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
-}
-
-.transaction-tile:hover {
-  border-color: #e7f1ff;
-  transform: translateY(-2px);
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05) !important;
 }
 
 .fab-button {
