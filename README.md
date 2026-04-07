@@ -1,86 +1,107 @@
-# 가계부 서비스 앱 (Household Account Book App)
+# 💰 가계부 서비스 앱 (Household Account Book App)
 
-본 프로젝트는 K-디지털 트레이닝 'IT's Your Life' 과정의 수강생들을 위한 **가계부 서비스 앱 스켈레톤 프로젝트**입니다. Vue 3 Composition API, Pinia, Vue-Router, 그리고 Axios를 활용하여 실제 작동하는 웹 애플리케이션을 구축하는 예제를 제공합니다.
-
----
-
-## 1. 프로젝트 소개
-- **기획 의도:** 수강생들이 Vue.js의 핵심 생태계를 이해하고, Mock API를 연동하여 CRUD(Create, Read, Update, Delete) 기능을 직접 구현해 보는 실습 예제입니다.
-- **프로젝트 목표:** 직관적인 UI를 통해 수입/지출 내역을 관리하고, 자산 현황을 한눈에 파악할 수 있는 대시보드를 제공합니다.
+본 프로젝트는 **K-디지털 트레이닝 'IT's Your Life'** 과정의 수강생들을 위해 제작된 **가계부 서비스 애플리케이션 스켈레톤 프로젝트**입니다.
+시니어 멘토의 관점에서 작성된 이 코드는 Vue 3의 현대적인 개발 방식과 프론트엔드 필수 생태계(Pinia, Router, Axios)를 한눈에 파악할 수 있도록 설계되었습니다.
 
 ---
 
-## 2. 시작 가이드 (How to run)
+## 📸 미리보기 (Screenshots)
 
-### 필수 요구사항
-- Node.js (v16 이상 권장)
-- npm
+### 1. 메인 대시보드 (Dashboard)
+이번 달의 수입, 지출, 순이익을 요약하여 보여주며, 최근 거래 내역을 빠르게 확인할 수 있습니다. 우측 하단의 **+ 버튼(FAB)**을 통해 어디서든 빠르게 내역을 추가할 수 있습니다.
+![대시보드](./public/img/dashboard.png)
 
-### 설치 및 실행 순서
+### 2. 거래 내역 조회 (History)
+전체 거래 내역을 테이블 형태로 조회하며, '수입'과 '지출' 버튼을 통해 원하는 내역만 필터링하여 볼 수 있습니다. 각 항목의 수정(Pencil) 및 삭제(Trash) 기능을 지원합니다.
+![내역 조회](./public/img/history.png)
 
-1. **의존성 패키지 설치**
-   ```bash
-   npm install
-   ```
+### 3. 거래 등록 및 수정 (Transaction Form)
+날짜, 구분, 카테고리, 금액, 메모를 입력할 수 있는 폼입니다. '수입'과 '지출' 선택에 따라 선택 가능한 카테고리가 동적으로 변경됩니다.
+![등록 폼](./public/img/transaction_form.png)
 
-2. **백엔드 (json-server) 실행**
-   ```bash
-   npx json-server db.json --port 3000
-   ```
-   *주의: 백엔드 서버는 `http://localhost:3000`에서 구동됩니다.*
-
-3. **프론트엔드 (Vite) 개발 서버 실행**
-   ```bash
-   npm run dev
-   ```
-   *기본 주소: `http://localhost:5173`*
+### 4. 설정 및 프로필 (Profile)
+사용자의 이름과 이메일을 확인하고 수정할 수 있는 개인화된 공간입니다.
+![프로필](./public/img/profile.png)
 
 ---
 
-## 3. 사용 기술 스택 (Tech Stack)
+## 🚀 시작 가이드 (How to Run)
 
-- **Frontend:** Vue 3 (Composition API), Vite, Vue-Router, Pinia, Axios
-- **Styling:** Bootstrap 5, FontAwesome
-- **Backend:** json-server (Mock API)
+초보 개발자분들도 따라 할 수 있도록 순서대로 설명합니다.
+
+### 1. 필수 프로그램 설치
+- **Node.js:** 공식 홈페이지에서 LTS 버전을 설치하세요.
+- **Visual Studio Code:** 추천하는 코드 에디터입니다.
+
+### 2. 프로젝트 내려받기 및 의존성 설치
+터미널(또는 CMD)을 열고 아래 명령어를 입력하세요.
+```bash
+# 패키지 설치 (node_modules 폴더가 생성됩니다)
+npm install
+```
+
+### 3. 백엔드(Mock API) 서버 실행
+이 앱은 실제 서버 대신 `json-server`를 사용하여 데이터를 저장하고 불러옵니다. **터미널을 하나 더 열어서** 실행해 주세요.
+```bash
+# db.json 파일을 데이터베이스로 사용하는 서버를 3000포트에서 실행
+npx json-server db.json --port 3000
+```
+> **Tip:** 서버가 켜져 있어야 데이터가 보이고 저장이 가능합니다!
+
+### 4. 프론트엔드 개발 서버 실행
+```bash
+# Vite 개발 서버 실행
+npm run dev
+```
+이제 터미널에 나타난 주소(예: `http://localhost:5173`)를 브라우저에서 열어보세요!
 
 ---
 
-## 4. 프로젝트 디렉토리 구조 (Tree)
+## 🛠 사용 기술 스택 (Tech Stack)
+
+- **Vue 3:** 가장 현대적인 `Composition API` (`<script setup>`) 방식을 사용합니다.
+- **Vite:** 빠르고 가벼운 차세대 빌드 도구입니다.
+- **Pinia:** Vue의 공식 상태 관리 라이브러리로, 복잡한 데이터를 중앙에서 관리합니다.
+- **Vue-Router:** 페이지 간 이동(라우팅)을 담당합니다.
+- **Axios:** 백엔드 서버와 데이터를 주고받기 위한 HTTP 클라이언트입니다.
+- **Bootstrap 5:** 깔끔하고 반응형인 UI를 빠르게 만들기 위한 스타일 프레임워크입니다.
+
+---
+
+## 📂 프로젝트 구조 (Project Structure)
 
 ```text
 src/
-├── api/          # Axios 인스턴스 및 API 호출 모듈 (CRUD 로직)
-├── components/   # 재사용 가능한 UI 컴포넌트
-├── router/       # Vue-Router 설정 및 페이지 경로 정의
-├── store/        # Pinia를 이용한 상태 관리 (데이터 중앙 집중화)
-├── views/        # 페이지 단위의 컴포넌트 (Home, History, Form, Profile)
-├── App.vue       # 메인 레이아웃 및 라우터 뷰 포함
-└── main.js       # 앱 초기화 및 외부 라이브러리(Bootstrap, Pinia) 등록
+├── api/          # 📡 API 통신 (Axios)
+│   ├── index.js      # Axios 기본 설정
+│   ├── budgetApi.js  # 거래 내역 관련 API
+│   └── profileApi.js # 프로필 관련 API
+├── store/        # 📦 상태 관리 (Pinia)
+│   ├── budgetStore.js   # 돈의 흐름(데이터) 관리
+│   └── profileStore.js  # 사용자 정보 관리
+├── router/       # 🛣 페이지 경로 (Vue Router)
+├── views/        # 🖥 주요 페이지 컴포넌트
+│   ├── Home.vue            # 대시보드
+│   ├── History.vue         # 내역 리스트
+│   ├── TransactionForm.vue # 등록/수정 폼
+│   └── Profile.vue         # 프로필 설정
+├── App.vue       # 🏠 최상위 부모 컴포넌트 (네비게이션 포함)
+└── main.js       # 🎬 앱의 시작점 (라이브러리 등록)
 ```
 
 ---
 
-## 5. 주요 기능 (Features)
+## 💡 주요 학습 포인트 (What We Learn)
 
-1. **메인 대시보드 (Home.vue)**
-   - 당월 총 수입/지출/순이익 요약 정보 제공
-   - 최근 거래 내역 간략 보기 및 빠른 추가 버튼(FAB) 제공
-2. **거래 내역 조회 (History.vue)**
-   - 전체 거래 내역 리스트 출력
-   - 수입/지출 유형별 필터링 기능
-   - 각 내역의 수정 및 삭제 기능
-3. **거래 등록 및 수정 (TransactionForm.vue)**
-   - 수입/지출 구분, 날짜, 카테고리, 금액, 메모 입력 폼
-   - 신규 데이터 저장 및 기존 데이터 수정(API 연동)
-4. **설정 및 프로필 (Profile.vue)**
-   - 사용자 이름 및 이메일 조회/수정 기능
+수강생 여러분은 이 코드를 분석하며 다음 내용을 학습할 수 있습니다.
+
+1.  **컴포넌트 중심 개발:** 기능을 단위별로 쪼개고 재사용하는 Vue의 핵심 철학을 배웁니다.
+2.  **반응형 데이터 처리:** `ref`, `reactive`, `computed`를 사용하여 데이터 변화에 따라 화면이 자동으로 바뀌는 원리를 이해합니다.
+3.  **중앙 집중식 상태 관리 (Pinia):** 왜 데이터를 한곳에서 관리해야 하는지, 여러 페이지에서 같은 데이터를 어떻게 공유하는지 학습합니다.
+4.  **비동기 통신 (Async/Await):** `Axios`를 사용하여 서버에서 데이터를 가져오고 보내는 실제 현업 방식을 경험합니다.
+5.  **REST API의 이해:** GET(조회), POST(생성), PUT(수정), DELETE(삭제)의 4대 기본 동작을 실습합니다.
 
 ---
 
-## 6. 💡 학습 포인트 (What we learn)
-
-- **Vue 3 Composition API (`<script setup>`):** 반응형 데이터(`ref`, `reactive`)와 생명주기 훅을 활용한 현대적인 컴포넌트 작성 방식.
-- **Vue-Router를 활용한 페이지 이동:** 동적 라우팅과 네비게이션 가드를 통한 싱글 페이지 애플리케이션(SPA) 구축.
-- **Pinia를 이용한 전역 상태 관리:** 여러 컴포넌트에서 공유해야 하는 데이터(로딩 상태, 공통 데이터 등)를 효율적으로 관리하는 방법.
-- **Axios와 json-server 연동:** RESTful API의 기본인 GET, POST, PUT, DELETE 요청을 통한 비동기 데이터 처리 방식.
-- **Bootstrap 5 활용:** 반응형 디자인과 유틸리티 클래스를 사용하여 빠르게 UI를 구성하는 기술.
+### 👨‍🏫 멘토의 한마디
+"코드를 단순히 복사하기보다는, 데이터가 **API -> Store -> View**로 어떻게 흘러가는지 흐름을 따라가 보세요. 이 흐름만 이해해도 프론트엔드 개발의 절반은 완성한 것입니다!"
