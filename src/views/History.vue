@@ -18,6 +18,20 @@ const formatCurrency = (value) => {
   return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(value);
 };
 
+const getCategoryIcon = (category) => {
+  const icons = {
+    '월급': 'bi-cash-stack',
+    '용돈': 'bi-gift',
+    '이자': 'bi-graph-up',
+    '식비': 'bi-cart',
+    '교통비': 'bi-bus-front',
+    '유흥': 'bi-controller',
+    '공과금': 'bi-house-heart',
+    '기타': 'bi-three-dots'
+  };
+  return icons[category] || 'bi-bookmark-star';
+};
+
 const deleteTransaction = async (id) => {
   if (confirm('정말로 삭제하시겠습니까?')) {
     try {
@@ -31,102 +45,111 @@ const deleteTransaction = async (id) => {
 </script>
 
 <template>
-  <div class="history">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="mb-0">거래 내역 조회</h2>
-      <router-link to="/transaction/add" class="btn btn-primary">
-        <i class="bi bi-plus-lg me-1"></i>내역 추가
-      </router-link>
+  <div class="history-view fade-in">
+    <div class="header mb-4">
+      <h4 class="fw-bold mb-3">거래 내역 조회</h4>
+
+      <!-- Styled Segmented Filter -->
+      <div class="filter-segment d-flex bg-white-50 p-1 rounded-4 shadow-sm border border-light">
+        <button
+          v-for="f in ['all', 'income', 'expense']"
+          :key="f"
+          @click="filter = f"
+          class="btn flex-grow-1 border-0 py-2 rounded-4 transition-all"
+          :class="filter === f ? 'btn-primary shadow-sm' : 'text-muted'"
+        >
+          {{ f === 'all' ? '전체' : f === 'income' ? '수입' : '지출' }}
+        </button>
+      </div>
     </div>
 
-    <!-- Filter Buttons -->
-    <div class="btn-group mb-4 shadow-sm" role="group">
-      <button
-        type="button"
-        class="btn py-2 px-4"
-        :class="filter === 'all' ? 'btn-primary' : 'btn-outline-primary'"
-        @click="filter = 'all'"
-      >
-        전체
-      </button>
-      <button
-        type="button"
-        class="btn py-2 px-4"
-        :class="filter === 'income' ? 'btn-success text-white' : 'btn-outline-success'"
-        @click="filter = 'income'"
-      >
-        수입
-      </button>
-      <button
-        type="button"
-        class="btn py-2 px-4"
-        :class="filter === 'expense' ? 'btn-danger text-white' : 'btn-outline-danger'"
-        @click="filter = 'expense'"
-      >
-        지출
-      </button>
+    <!-- Grouped Transactions by Date -->
+    <div v-if="filteredBudgets.length === 0" class="text-center py-5 text-muted bg-white rounded-4 shadow-sm border border-light">
+      <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
+      해당 조건의 거래 내역이 없습니다.
     </div>
-
-    <!-- History List -->
-    <div class="card border-0 shadow-sm">
-      <div class="card-body p-0">
-        <div v-if="filteredBudgets.length === 0" class="p-5 text-center text-muted">
-          해당 조건의 거래 내역이 없습니다.
+    <div v-else class="transaction-list">
+      <div
+        v-for="item in filteredBudgets"
+        :key="item.id"
+        class="transaction-tile d-flex align-items-center bg-white p-3 rounded-4 shadow-sm mb-3 position-relative overflow-hidden"
+      >
+        <div
+          class="category-icon rounded-4 me-3 d-flex align-items-center justify-content-center"
+          :class="item.type === 'income' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
+          style="width: 48px; height: 48px; flex-shrink: 0;"
+        >
+          <i :class="getCategoryIcon(item.category)" class="fs-4"></i>
         </div>
-        <div v-else class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-              <tr>
-                <th class="ps-4">날짜</th>
-                <th>구분</th>
-                <th>카테고리</th>
-                <th>메모</th>
-                <th class="text-end">금액</th>
-                <th class="text-center">관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in filteredBudgets" :key="item.id">
-                <td class="ps-4">{{ item.date }}</td>
-                <td>
-                  <span
-                    :class="
-                      item.type === 'income'
-                        ? 'badge bg-success-subtle text-success border border-success'
-                        : 'badge bg-danger-subtle text-danger border border-danger'
-                    "
-                    class="rounded-pill px-3"
-                  >
-                    {{ item.type === 'income' ? '수입' : '지출' }}
-                  </span>
-                </td>
-                <td class="fw-bold">{{ item.category }}</td>
-                <td class="text-muted">{{ item.memo || '-' }}</td>
-                <td
-                  class="text-end fw-bold"
-                  :class="item.type === 'income' ? 'text-success' : 'text-danger'"
-                >
-                  {{ item.type === 'income' ? '+' : '-' }} {{ formatCurrency(item.amount) }}
-                </td>
-                <td class="text-center">
-                  <router-link
-                    :to="`/transaction/edit/${item.id}`"
-                    class="btn btn-sm btn-outline-secondary me-2"
-                  >
-                    <i class="bi bi-pencil"></i>
-                  </router-link>
-                  <button
-                    @click="deleteTransaction(item.id)"
-                    class="btn btn-sm btn-outline-danger"
-                  >
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="flex-grow-1 overflow-hidden me-2">
+          <div class="d-flex align-items-center">
+            <h6 class="fw-bold mb-0 text-truncate">{{ item.category }}</h6>
+            <small class="ms-2 text-muted-extra small">{{ item.date }}</small>
+          </div>
+          <small class="text-muted d-block text-truncate small">{{ item.memo || '기록 없음' }}</small>
+        </div>
+        <div class="text-end d-flex flex-column align-items-end">
+          <div :class="item.type === 'income' ? 'text-success fw-bold' : 'text-danger fw-bold'" class="mb-1">
+            {{ item.type === 'income' ? '+' : '-' }} {{ formatCurrency(item.amount) }}
+          </div>
+          <div class="action-buttons d-flex gap-1">
+            <router-link :to="`/transaction/edit/${item.id}`" class="btn btn-sm btn-icon-only text-secondary rounded-circle">
+              <i class="bi bi-pencil"></i>
+            </router-link>
+            <button @click="deleteTransaction(item.id)" class="btn btn-sm btn-icon-only text-danger rounded-circle">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.filter-segment {
+  background-color: #f1f3f5;
+}
+
+.transition-all {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transaction-tile {
+  border: 1px solid #f8f9fa;
+  animation: slideIn 0.3s ease-out;
+}
+
+.btn-icon-only {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+}
+
+.btn-icon-only:active {
+  background-color: #e9ecef;
+}
+
+.text-muted-extra {
+  font-size: 0.7rem;
+  color: #adb5bd;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>

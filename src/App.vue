@@ -14,55 +14,104 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow-sm">
-      <div class="container">
-        <router-link class="navbar-brand fw-bold" to="/">
-          <i class="bi bi-wallet2 me-2"></i>가계부 앱
-        </router-link>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-              <router-link class="nav-link" to="/" active-class="active">홈</router-link>
-            </li>
-            <li class="nav-item">
-              <router-link class="nav-link" to="/history" active-class="active">내역</router-link>
-            </li>
-            <li class="nav-item">
-              <router-link class="nav-link" to="/profile" active-class="active">프로필</router-link>
-            </li>
-          </ul>
+  <div class="app-container min-vh-100 bg-light d-flex flex-column">
+    <!-- Main Mobile Content Wrapper -->
+    <div class="mobile-wrapper flex-grow-1 mx-auto bg-white shadow-sm position-relative">
+      <!-- Scrollable Content Area -->
+      <main class="content-area pb-5">
+        <router-view v-slot="{ Component }">
+          <transition name="fade" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
+      </main>
+
+      <!-- Bottom Navigation Bar -->
+      <nav class="bottom-nav fixed-bottom mx-auto bg-white border-top shadow-lg">
+        <div class="container-fluid h-100 px-0">
+          <div class="row h-100 g-0">
+            <div class="col text-center">
+              <router-link to="/" class="nav-item-link py-2 d-flex flex-column align-items-center" active-class="active">
+                <i class="bi bi-grid-fill fs-4"></i>
+                <span class="small">홈</span>
+              </router-link>
+            </div>
+            <div class="col text-center">
+              <router-link to="/history" class="nav-item-link py-2 d-flex flex-column align-items-center" active-class="active">
+                <i class="bi bi-list-columns-reverse fs-4"></i>
+                <span class="small">내역</span>
+              </router-link>
+            </div>
+            <div class="col text-center">
+              <router-link to="/profile" class="nav-item-link py-2 d-flex flex-column align-items-center" active-class="active">
+                <i class="bi bi-person-fill fs-4"></i>
+                <span class="small">프로필</span>
+              </router-link>
+            </div>
+          </div>
         </div>
-      </div>
-    </nav>
-
-    <main class="container">
-      <router-view />
-    </main>
-
-    <footer class="text-center text-muted mt-5 py-3 border-top">
-      <p>&copy; 2026 Household Account Book - IT's Your Life Training</p>
-    </footer>
+      </nav>
+    </div>
   </div>
 </template>
 
 <style>
+/* Base Styles */
 body {
-  background-color: #f8f9fa;
+  background-color: #f0f2f5;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
 }
 
-.active {
-  font-weight: bold;
+/* Mobile Container Wrapper */
+.mobile-wrapper {
+  width: 100%;
+  max-width: 480px; /* Standard Mobile-First Width */
+  min-height: 100vh;
+  margin-bottom: env(safe-area-inset-bottom);
+}
+
+.content-area {
+  padding: 20px 20px 80px 20px; /* Bottom padding for Nav */
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+  max-width: 480px;
+  height: 65px;
+  left: 0;
+  right: 0;
+  z-index: 1030;
+}
+
+.nav-item-link {
+  text-decoration: none;
+  color: #adb5bd;
+  transition: all 0.3s ease;
+  height: 100%;
+  justify-content: center;
+}
+
+.nav-item-link.active {
+  color: #0d6efd;
+}
+
+.nav-item-link i {
+  margin-bottom: 2px;
+}
+
+/* Animations */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Utility for Touch targets */
+.btn, .nav-item-link, input, select {
+  min-height: 44px;
 }
 </style>
