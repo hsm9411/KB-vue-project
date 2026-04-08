@@ -1,5 +1,8 @@
 # 💰 가계부 서비스 앱 (Household Account Book App) - Final Phase (Responsive Web App)
 
+[![Git Convention](https://img.shields.io/badge/Git%20Convention-Conventional%20Commits-blue)](COMMIT_CONVENTION.md)
+[![Branch Strategy](https://img.shields.io/badge/Branch%20Strategy-Simplified%20Git%20Flow-orange)](CONTRIBUTING.md)
+
 본 프로젝트는 **K-디지털 트레이닝 'IT's Your Life'** 과정의 수강생들을 위해 제작된 **가계부 서비스 애플리케이션 스켈레톤 프로젝트**입니다.
 최종 단계에서는 모바일을 넘어 태블릿과 PC 환경에서도 최적의 경험을 제공하는 **완벽한 반응형 웹앱(Responsive Web App)**으로 진화했습니다.
 
