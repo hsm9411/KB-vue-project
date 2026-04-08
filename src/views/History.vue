@@ -1,221 +1,278 @@
 <script setup>
-import { ref, computed } from 'vue';
-import { useBudgetStore } from '../store/budgetStore';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useTxStore } from '../store/txStore';
+import { useUserStore } from '../store/userStore';
+import BaseCard from '../components/ui/BaseCard.vue';
 import BaseBadge from '../components/ui/BaseBadge.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
-import BaseCard from '../components/ui/BaseCard.vue';
+import {
+  format,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameMonth,
+  isSameDay,
+  parseISO
+} from 'date-fns';
+import { ko } from 'date-fns/locale';
 
-const budgetStore = useBudgetStore();
-const filter = ref('all');
+const router = useRouter();
+const txStore = useTxStore();
+const userStore = useUserStore();
 
-const filteredBudgets = computed(() => {
-  if (filter.value === 'income') {
-    return budgetStore.sortedBudgets.filter((item) => item.type === 'income');
-  } else if (filter.value === 'expense') {
-    return budgetStore.sortedBudgets.filter((item) => item.type === 'expense');
-  }
-  return budgetStore.sortedBudgets;
+const currentMonth = ref(new Date());
+const selectedDate = ref(new Date());
+
+onMounted(() => {
+  if (userStore.user) txStore.fetchTransactions(userStore.user.id);
 });
 
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(value);
+const calendarDays = computed(() => {
+  const start = startOfWeek(startOfMonth(currentMonth.value));
+  const end = endOfWeek(endOfMonth(currentMonth.value));
+  return eachDayOfInterval({ start, end });
+});
+
+const nextMonth = () => currentMonth.value = addMonths(currentMonth.value, 1);
+const prevMonth = () => currentMonth.value = subMonths(currentMonth.value, 1);
+
+const selectDate = (date) => {
+  selectedDate.value = date;
 };
 
-const getCategoryIcon = (category) => {
-  const icons = {
-    '월급': 'bi-cash-stack',
-    '용돈': 'bi-gift',
-    '이자': 'bi-graph-up',
-    '식비': 'bi-cart',
-    '교통비': 'bi-bus-front',
-    '유흥': 'bi-controller',
-    '공과금': 'bi-house-heart',
-    '기타': 'bi-three-dots'
-  };
-  return icons[category] || 'bi-bookmark-star';
+const dayTransactions = computed(() => {
+  const dateStr = format(selectedDate.value, 'yyyy-MM-dd');
+  return txStore.transactions.filter(t => t.date === dateStr);
+});
+
+const getDayStats = (date) => {
+  const dateStr = format(date, 'yyyy-MM-dd');
+  const txs = txStore.transactions.filter(t => t.date === dateStr);
+  const income = txs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const expense = txs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  return { income, expense };
 };
 
-const deleteTransaction = async (id) => {
-  if (confirm('정말로 삭제하시겠습니까?')) {
-    try {
-      await budgetStore.deleteBudget(id);
-      alert('성공적으로 삭제되었습니다.');
-    } catch (err) {
-      alert('삭제에 실패했습니다.');
-    }
+const handleDelete = async (id) => {
+  if (confirm('정말 삭제하시겠습니까?')) {
+    await txStore.deleteTransaction(id);
   }
 };
+
+const handleEdit = (id) => {
+  router.push(`/transaction/edit/${id}`);
+};
+
+const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(val);
 </script>
 
 <template>
-  <div class="history-view fade-in">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-      <h2 class="fw-bold mb-0">전체 거래 내역</h2>
-
-      <!-- Styled Segmented Filter -->
-      <div class="filter-segment d-flex bg-white p-1 rounded-4 shadow-sm border border-light" style="min-width: 300px;">
-        <button
-          v-for="f in ['all', 'income', 'expense']"
-          :key="f"
-          @click="filter = f"
-          class="btn-filter flex-grow-1 border-0 py-2 rounded-4 transition-all"
-          :class="filter === f ? 'bg-primary text-white shadow-sm fw-bold' : 'text-muted'"
-        >
-          {{ f === 'all' ? '전체' : f === 'income' ? '수입' : '지출' }}
-        </button>
-      </div>
+  <div class="history-view fade-in pb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="fw-bold mb-0">거래 내역 조회</h4>
+      <BaseButton variant="primary" size="sm" @click="router.push('/transaction/add')">
+        <i class="bi bi-plus-lg me-1"></i> 추가
+      </BaseButton>
     </div>
 
-    <!-- Mobile-First List (Hidden on md and above) -->
-    <div class="d-md-none transaction-list">
-      <div v-if="filteredBudgets.length === 0" class="text-center py-5 text-muted bg-white rounded-4 shadow-sm border border-light">
-        거래 내역이 없습니다.
-      </div>
-      <BaseCard
-        v-for="item in filteredBudgets"
-        :key="item.id"
-        class="mb-3"
-        padding="p-3"
-        noBorder
-      >
-        <div class="d-flex align-items-center">
-          <div
-            class="category-icon rounded-4 me-3 d-flex align-items-center justify-content-center"
-            :class="item.type === 'income' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
-            style="width: 48px; height: 48px; flex-shrink: 0;"
-          >
-            <i :class="getCategoryIcon(item.category)" class="fs-4"></i>
+    <div class="row g-4">
+      <!-- Calendar Column -->
+      <div class="col-12 col-xl-7">
+        <BaseCard shadow="shadow-sm" padding="p-0 overflow-hidden">
+          <!-- Calendar Header -->
+          <div class="d-flex justify-content-between align-items-center p-3 border-bottom bg-light">
+            <BaseButton variant="light" size="sm" @click="prevMonth">
+              <i class="bi bi-chevron-left"></i>
+            </BaseButton>
+            <h5 class="fw-bold mb-0">{{ format(currentMonth, 'yyyy년 MM월') }}</h5>
+            <BaseButton variant="light" size="sm" @click="nextMonth">
+              <i class="bi bi-chevron-right"></i>
+            </BaseButton>
           </div>
-          <div class="flex-grow-1 overflow-hidden me-2">
-            <div class="d-flex align-items-center">
-              <h6 class="fw-bold mb-0 text-truncate">{{ item.category }}</h6>
-              <small class="ms-2 text-muted small extra-small">{{ item.date }}</small>
-            </div>
-            <small class="text-muted d-block text-truncate small">{{ item.memo || '기록 없음' }}</small>
-          </div>
-          <div class="text-end d-flex flex-column align-items-end">
-            <div :class="item.type === 'income' ? 'text-success fw-bold' : 'text-danger fw-bold'" class="mb-1">
-              {{ item.type === 'income' ? '+' : '-' }} {{ formatCurrency(item.amount) }}
-            </div>
-            <div class="action-buttons d-flex gap-1">
-              <router-link :to="`/transaction/edit/${item.id}`" class="btn-icon-link">
-                <i class="bi bi-pencil"></i>
-              </router-link>
-              <button @click="deleteTransaction(item.id)" class="btn-icon-btn text-danger">
-                <i class="bi bi-trash"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </BaseCard>
-    </div>
 
-    <!-- Desktop Data Table (Visible on md and above) -->
-    <div class="d-none d-md-block">
-      <BaseCard padding="p-0" noBorder>
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="bg-light bg-opacity-50">
-              <tr class="border-bottom text-muted">
-                <th class="ps-4 py-3 fw-bold small text-uppercase">날짜</th>
-                <th class="py-3 fw-bold small text-uppercase">거래 유형</th>
-                <th class="py-3 fw-bold small text-uppercase">카테고리</th>
-                <th class="py-3 fw-bold small text-uppercase">메모</th>
-                <th class="py-3 fw-bold small text-uppercase text-end">금액</th>
-                <th class="py-3 fw-bold small text-uppercase text-center pe-4">액션</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="filteredBudgets.length === 0">
-                <td colspan="6" class="text-center py-5 text-muted">표시할 거래 내역이 없습니다.</td>
-              </tr>
-              <tr v-for="item in filteredBudgets" :key="item.id" class="border-bottom last-no-border">
-                <td class="ps-4 py-4 text-muted small">{{ item.date }}</td>
-                <td>
-                  <BaseBadge :variant="item.type === 'income' ? 'success' : 'danger'">
-                    {{ item.type === 'income' ? '수입' : '지출' }}
-                  </BaseBadge>
-                </td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <div
-                      class="category-icon-small rounded-circle me-3 d-flex align-items-center justify-content-center"
-                      :class="item.type === 'income' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
-                      style="width: 36px; height: 36px;"
-                    >
-                      <i :class="getCategoryIcon(item.category)" class="fs-6"></i>
+          <!-- Calendar Grid -->
+          <div class="calendar-grid">
+            <div v-for="day in ['일', '월', '화', '수', '목', '금', '토']" :key="day" class="calendar-weekday">
+              {{ day }}
+            </div>
+            <div
+              v-for="date in calendarDays"
+              :key="date.toString()"
+              class="calendar-day"
+              :class="{
+                'other-month': !isSameMonth(date, currentMonth),
+                'selected': isSameDay(date, selectedDate),
+                'today': isSameDay(date, new Date())
+              }"
+              @click="selectDate(date)"
+            >
+              <span class="day-number">{{ format(date, 'd') }}</span>
+              <div class="day-stats" v-if="getDayStats(date).income > 0 || getDayStats(date).expense > 0">
+                <div v-if="getDayStats(date).income > 0" class="stat-income">
+                  {{ formatCurrency(getDayStats(date).income) }}
+                </div>
+                <div v-if="getDayStats(date).expense > 0" class="stat-expense">
+                  {{ formatCurrency(getDayStats(date).expense) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </BaseCard>
+      </div>
+
+      <!-- Detail List Column -->
+      <div class="col-12 col-xl-5">
+        <div class="sticky-top" style="top: 1rem;">
+          <h6 class="fw-bold mb-3 d-flex justify-content-between align-items-center">
+            <span>{{ format(selectedDate, 'yyyy-MM-dd') }} 내역</span>
+            <small class="text-muted fw-normal">{{ dayTransactions.length }}건</small>
+          </h6>
+
+          <div v-if="dayTransactions.length === 0" class="text-center py-5 text-muted bg-white rounded-4 border">
+            <i class="bi bi-journal-x d-block fs-1 mb-2 opacity-25"></i>
+            해당 날짜의 내역이 없습니다.
+          </div>
+
+          <div v-else class="transaction-list">
+            <BaseCard
+              v-for="tx in dayTransactions"
+              :key="tx.id"
+              class="mb-3 border-0 shadow-sm"
+              padding="p-3"
+            >
+              <div class="d-flex align-items-center mb-2">
+                <div
+                  class="rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0"
+                  :class="tx.type === 'income' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
+                  style="width: 40px; height: 40px;"
+                >
+                  <i :class="tx.type === 'income' ? 'bi-plus-lg' : 'bi-dash-lg'"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <span class="fw-bold d-block">{{ tx.category }}</span>
+                      <small class="text-muted">{{ tx.memo || '-' }}</small>
                     </div>
-                    <span class="fw-bold">{{ item.category }}</span>
+                    <div class="text-end">
+                      <span class="fw-bold d-block" :class="tx.type === 'income' ? 'text-success' : 'text-danger'">
+                        {{ tx.type === 'income' ? '+' : '-' }}{{ formatCurrency(tx.amount) }}원
+                      </span>
+                      <BaseBadge v-if="tx.isDutchPay" variant="info" size="sm">N빵</BaseBadge>
+                    </div>
                   </div>
-                </td>
-                <td class="text-muted">{{ item.memo || '-' }}</td>
-                <td class="text-end pe-3 fw-bold" :class="item.type === 'income' ? 'text-success' : 'text-danger'">
-                  {{ item.type === 'income' ? '+' : '-' }} {{ formatCurrency(item.amount) }}
-                </td>
-                <td class="text-center pe-4">
-                  <div class="d-flex justify-content-center gap-2">
-                    <router-link :to="`/transaction/edit/${item.id}`">
-                      <BaseButton variant="outline-secondary" size="sm">
-                        <i class="bi bi-pencil me-1"></i> 수정
-                      </BaseButton>
-                    </router-link>
-                    <BaseButton variant="outline-danger" size="sm" @click="deleteTransaction(item.id)">
-                      <i class="bi bi-trash me-1"></i> 삭제
-                    </BaseButton>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                </div>
+              </div>
+              <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                <BaseButton variant="light" size="sm" class="py-1 px-3" @click="handleEdit(tx.id)">
+                  <i class="bi bi-pencil-square me-1"></i> 수정
+                </BaseButton>
+                <BaseButton variant="outline-danger" size="sm" class="py-1 px-3" @click="handleDelete(tx.id)">
+                  <i class="bi bi-trash me-1"></i> 삭제
+                </BaseButton>
+              </div>
+            </BaseCard>
+          </div>
         </div>
-      </BaseCard>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.filter-segment {
-  background-color: #f1f3f5;
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background-color: #eee;
+  gap: 1px;
 }
 
-.btn-filter {
-  background: transparent;
-  outline: none;
+.calendar-weekday {
+  background-color: #f8f9fa;
+  padding: 10px 0;
+  text-align: center;
+  font-weight: bold;
+  font-size: 0.8rem;
+  color: #666;
 }
 
-.btn-icon-link, .btn-icon-btn {
-  width: 32px;
-  height: 32px;
+.calendar-day {
+  background-color: #fff;
+  min-height: 100px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
   display: flex;
+  flex-direction: column;
+}
+
+.calendar-day:hover {
+  background-color: #f0f7ff;
+}
+
+.calendar-day.other-month {
+  color: #ccc;
+  background-color: #fafafa;
+}
+
+.calendar-day.selected {
+  background-color: #e7f1ff;
+  box-shadow: inset 0 0 0 2px #0d6efd;
+  z-index: 1;
+}
+
+.calendar-day.today .day-number {
+  background-color: #0d6efd;
+  color: white;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: #f8f9fa;
   border-radius: 50%;
-  text-decoration: none;
-  color: #6c757d;
-  border: none;
+}
+
+.day-number {
+  font-weight: bold;
   font-size: 0.9rem;
-  transition: all 0.2s ease;
+  margin-bottom: 4px;
 }
 
-.btn-icon-link:hover, .btn-icon-btn:hover {
-  background-color: #e9ecef;
-}
-
-.extra-small {
+.day-stats {
   font-size: 0.7rem;
+  margin-top: auto;
 }
 
-.last-no-border:last-child {
-  border-bottom: none !important;
+.stat-income {
+  color: #198754;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.fade-in {
-  animation: fadeIn 0.4s ease-out;
+.stat-income::before { content: '+'; }
+
+.stat-expense {
+  color: #dc3545;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.stat-expense::before { content: '-'; }
+
+@media (max-width: 768px) {
+  .calendar-day {
+    min-height: 70px;
+    padding: 4px;
+  }
+  .day-stats {
+    display: none;
+  }
 }
 </style>
