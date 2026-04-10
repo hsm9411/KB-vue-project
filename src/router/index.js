@@ -6,6 +6,7 @@ import History from '../views/History.vue';
 import TransactionForm from '../views/TransactionForm.vue';
 import Profile from '../views/Profile.vue';
 import Login from '../views/Login.vue';
+import Register from '../views/Register.vue';
 
 // New Phase 4 Views
 const Race = () => import('../views/Race.vue');
@@ -13,6 +14,7 @@ const Summary = () => import('../views/Summary.vue');
 
 const routes = [
   { path: '/login', component: Login, meta: { public: true } },
+  { path: '/register', component: Register, meta: { public: true } },
   { path: '/', component: Home },
   { path: '/history', component: History },
   { path: '/transaction/add', component: TransactionForm },
