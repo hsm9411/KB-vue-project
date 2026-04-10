@@ -3,6 +3,8 @@ import { onMounted } from 'vue';
 import { useUserStore } from './store/userStore';
 import { useTxStore } from './store/txStore';
 import { useRouter } from 'vue-router';
+import ToastContainer from './components/ui/ToastContainer.vue';
+import BaseAvatar from './components/ui/BaseAvatar.vue';
 
 const userStore = useUserStore();
 const txStore = useTxStore();
@@ -22,6 +24,21 @@ const handleLogout = () => {
 
 <template>
   <div class="app-container min-vh-100 bg-light d-flex flex-column flex-md-row">
+    <!-- Toast Notifications -->
+    <ToastContainer />
+
+    <!-- TopBar (Mobile Only) -->
+    <header v-if="userStore.isLoggedIn" class="d-md-none fixed-top bg-white border-bottom px-3 py-2 d-flex justify-content-between align-items-center shadow-sm" style="z-index: 1030; height: 60px;">
+      <router-link class="d-flex align-items-center text-primary text-decoration-none" to="/">
+        <i class="bi bi-wallet2 fs-4 me-2"></i>
+        <span class="fw-bold">SavePoint</span>
+      </router-link>
+      <div class="d-flex align-items-center">
+        <span class="me-2 small fw-bold">{{ userStore.user?.name }}</span>
+        <BaseAvatar :src="userStore.user?.profileImg" size="35px" fontSize="1.2rem" />
+      </div>
+    </header>
+
     <!-- Desktop Sidebar Navigation -->
     <aside v-if="userStore.isLoggedIn" class="sidebar d-none d-md-flex flex-column bg-white border-end shadow-sm vh-100 position-sticky top-0">
       <div class="p-4 mb-4">
@@ -103,6 +120,17 @@ const handleLogout = () => {
 </template>
 
 <style>
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+:root {
+  --sp-black-1: #1A1A1A;
+  --sp-black-2: #2D2D2D;
+  --sp-black-3: #404040;
+  --sp-red: #FF4D4D;
+  --sp-green: #2ECC71;
+  --sp-yellow: #F1C40F;
+}
+
 body {
   background-color: #f8f9fa;
   font-family: 'Pretendard', sans-serif;
@@ -115,7 +143,10 @@ body {
 .bottom-nav { height: 70px; z-index: 1030; }
 .nav-item-link { text-decoration: none; color: #adb5bd; }
 .nav-item-link.active { color: #0d6efd; }
-@media (max-width: 767.98px) { main { padding-bottom: 90px; } }
+@media (max-width: 767.98px) {
+  main { padding-bottom: 90px; padding-top: 70px; }
+  .container-fluid { padding-bottom: 2rem; }
+}
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

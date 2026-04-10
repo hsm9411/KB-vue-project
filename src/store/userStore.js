@@ -26,6 +26,21 @@ export const useUserStore = defineStore('user', {
         this.loading = false;
       }
     },
+    async register(userData) {
+      this.loading = true;
+      try {
+        const response = await userApi.register({
+          ...userData,
+          expenseLimit: 1000000,
+          groupId: null,
+        });
+        this.user = response.data;
+        localStorage.setItem('user', JSON.stringify(this.user));
+        return true;
+      } finally {
+        this.loading = false;
+      }
+    },
     logout() {
       this.user = null;
       localStorage.removeItem('user');
