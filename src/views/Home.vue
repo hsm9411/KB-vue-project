@@ -132,7 +132,7 @@ const chartOptions = {
 
     <!-- FAB for Quick Add -->
     <router-link to="/transaction/add" class="fab-btn">
-      <BaseButton variant="primary" size="lg" class="rounded-circle shadow-lg" style="width: 60px; height: 60px; padding:0;">
+      <BaseButton variant="primary" size="lg" class="rounded-circle shadow-lg d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; padding:0;">
         <i class="bi bi-plus-lg fs-2"></i>
       </BaseButton>
     </router-link>
