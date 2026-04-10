@@ -37,19 +37,36 @@ export const useTxStore = defineStore('tx', {
     },
     async addTransaction(data) {
       // Dutch Pay Logic
-      let finalData = { ...data };
+      let finalData = {
+        ...data,
+        groupId: data.groupId || null
+      };
+
       if (data.isDutchPay && data.dutchPayHeadcount > 1) {
         finalData.originalAmount = data.amount;
-        finalData.amount = Math.floor(data.amount / data.dutchPayHeadcount);
+        const splitAmount = Math.floor(data.amount / data.dutchPayHeadcount);
+        const remainder = data.amount % data.dutchPayHeadcount;
+
+        finalData.amount = splitAmount;
+        finalData.metadata = { remainder, splitAmount };
       }
+
       const response = await txApi.addTransaction(finalData);
       this.transactions.push(response.data);
     },
     async updateTransaction(id, data) {
-      let finalData = { ...data };
+      let finalData = {
+        ...data,
+        groupId: data.groupId || null
+      };
+
       if (data.isDutchPay && data.dutchPayHeadcount > 1) {
         finalData.originalAmount = data.amount;
-        finalData.amount = Math.floor(data.amount / data.dutchPayHeadcount);
+        const splitAmount = Math.floor(data.amount / data.dutchPayHeadcount);
+        const remainder = data.amount % data.dutchPayHeadcount;
+
+        finalData.amount = splitAmount;
+        finalData.metadata = { remainder, splitAmount };
       }
       const response = await txApi.updateTransaction(id, finalData);
       const index = this.transactions.findIndex(t => t.id === id);
