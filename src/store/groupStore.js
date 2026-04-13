@@ -14,26 +14,35 @@ export const useGroupStore = defineStore('group', {
     async fetchGroupData(groupId) {
       this.loading = true;
       try {
-        const groupRes = await groupApi.getGroup(groupId);
-        this.group = groupRes.data;
-
-        const membersRes = await groupApi.getGroupMembers(this.group.memberIds);
-        this.members = membersRes.data;
-
-        // Fetch spendings for each member for current month
         const start = format(startOfMonth(new Date()), 'yyyy-MM-dd');
         const end = format(endOfMonth(new Date()), 'yyyy-MM-dd');
 
-        for (const member of this.members) {
-          const txRes = await txApi.getTransactions({
-            userId: member.id,
+        // 1. Parallel fetch: Group, Members, and ALL group transactions
+        const [groupRes, membersRes, txRes] = await Promise.all([
+          groupApi.getGroup(groupId),
+          groupApi.getGroupMembersByGroup(groupId), // We'll update groupApi to fetch by groupId
+          txApi.getTransactions({
+            groupId: groupId,
             date_gte: start,
             date_lte: end,
             type: 'expense'
-          });
-          const total = txRes.data.reduce((sum, t) => sum + t.amount, 0);
-          this.memberSpendings[member.id] = total;
-        }
+          })
+        ]);
+
+        this.group = groupRes.data;
+        this.members = membersRes.data;
+
+        // 2. Aggregate spendings in memory (O(T) where T is number of transactions)
+        const spendings = {};
+        this.members.forEach(m => spendings[m.id] = 0);
+
+        txRes.data.forEach(tx => {
+          if (spendings[tx.userId] !== undefined) {
+            spendings[tx.userId] += tx.amount;
+          }
+        });
+
+        this.memberSpendings = spendings;
       } catch (err) {
         console.error('Failed to fetch group data', err);
       } finally {
