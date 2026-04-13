@@ -15,7 +15,7 @@ export const useUserStore = defineStore('user', {
       this.loading = true;
       try {
         const response = await userApi.login(email, password);
-        if (response.data.length > 0) {
+        if (response.data && response.data.length > 0) {
           const user = response.data[0];
           this.user = user;
           localStorage.setItem('user', JSON.stringify(user));

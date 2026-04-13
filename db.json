@@ -1,40 +1,47 @@
 {
   "users": [
     {
-      "id": "1",
+      "id": 1,
+      "displayId": "USER001",
       "email": "kb_student@kb.com",
       "password": "password123",
       "name": "KB수강생",
       "expenseLimit": 1000000,
-      "groupId": "G1",
-      "profileImg": "https://api.dicebear.com/7.x/avataaars/svg?seed=KB"
+      "groupId": 1,
+      "profileImg": "https://api.dicebear.com/7.x/avataaars/svg?seed=KB",
+      "isActive": true
     },
     {
-      "id": "2",
+      "id": 2,
+      "displayId": "USER002",
       "email": "mentor@kb.com",
       "password": "password123",
       "name": "줄스멘토",
       "expenseLimit": 1500000,
-      "groupId": "G1",
-      "profileImg": "https://api.dicebear.com/7.x/avataaars/svg?seed=Jules"
+      "groupId": 1,
+      "profileImg": "https://api.dicebear.com/7.x/avataaars/svg?seed=Jules",
+      "isActive": false
     }
   ],
   "groups": [
     {
-      "id": "G1",
+      "id": 1,
+      "displayId": "G001",
       "name": "거지방 레이스",
       "limit": 2000000,
-      "inviteCode": "SAVE12"
+      "inviteCode": "SAVE12",
+      "isActive": true
     }
   ],
   "goals": [
     {
-      "id": "1",
-      "userId": "1",
+      "id": 1,
+      "userId": 1,
       "title": "맥북 프로 구매",
       "targetAmount": 3500000,
       "currentAmount": 1750000,
-      "isAchieved": false
+      "isAchieved": false,
+      "isActive": true
     }
   ],
   "categories": {
@@ -55,20 +62,21 @@
   },
   "transactions": [
     {
-      "id": "2",
-      "userId": "1",
-      "groupId": "G1",
+      "id": 1,
+      "userId": 1,
+      "groupId": 1,
       "date": "2026-04-02",
       "type": "expense",
       "category": "식비",
       "amount": 10000,
       "memo": "점심 순대국",
-      "isDutchPay": false
+      "isDutchPay": false,
+      "isActive": true
     },
     {
-      "id": "3",
-      "userId": "1",
-      "groupId": "G1",
+      "id": 2,
+      "userId": 1,
+      "groupId": 1,
       "date": "2026-04-03",
       "type": "expense",
       "category": "유흥",
@@ -76,7 +84,9 @@
       "memo": "치킨 회식 N빵",
       "isDutchPay": true,
       "dutchPayHeadcount": 4,
-      "originalAmount": 480000
+      "originalAmount": 480000,
+      "metadata": { "remainder": 0, "splitAmount": 120000 },
+      "isActive": true
     }
   ]
 }
