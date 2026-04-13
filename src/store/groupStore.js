@@ -17,10 +17,10 @@ export const useGroupStore = defineStore('group', {
         const start = format(startOfMonth(new Date()), 'yyyy-MM-dd');
         const end = format(endOfMonth(new Date()), 'yyyy-MM-dd');
 
-        // 1. Parallel fetch: Group, Members, and ALL group transactions
-        const [groupRes, membersRes, txRes] = await Promise.all([
+        // 1. Robust Parallel fetch using allSettled
+        const results = await Promise.allSettled([
           groupApi.getGroup(groupId),
-          groupApi.getGroupMembersByGroup(groupId), // We'll update groupApi to fetch by groupId
+          groupApi.getGroupMembersByGroup(groupId),
           txApi.getTransactions({
             groupId: groupId,
             date_gte: start,
@@ -29,18 +29,29 @@ export const useGroupStore = defineStore('group', {
           })
         ]);
 
+        // Extract values or handle failure cases
+        const groupRes = results[0].status === 'fulfilled' ? results[0].value : null;
+        const membersRes = results[1].status === 'fulfilled' ? results[1].value : { data: [] };
+        const txRes = results[2].status === 'fulfilled' ? results[2].value : { data: [] };
+
+        if (!groupRes) {
+          throw new Error('그룹 정보를 불러올 수 없습니다.');
+        }
+
         this.group = groupRes.data;
         this.members = membersRes.data;
 
-        // 2. Aggregate spendings in memory (O(T) where T is number of transactions)
+        // 2. Aggregate spendings in memory safely
         const spendings = {};
         this.members.forEach(m => spendings[m.id] = 0);
 
-        txRes.data.forEach(tx => {
-          if (spendings[tx.userId] !== undefined) {
-            spendings[tx.userId] += tx.amount;
-          }
-        });
+        if (txRes && txRes.data) {
+          txRes.data.forEach(tx => {
+            if (spendings[tx.userId] !== undefined) {
+              spendings[tx.userId] += tx.amount;
+            }
+          });
+        }
 
         this.memberSpendings = spendings;
       } catch (err) {

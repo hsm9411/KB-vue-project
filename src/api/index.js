@@ -26,7 +26,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const toastStore = useToastStore();
-    const message = error.response?.data?.message || '오류가 발생했습니다. 다시 시도해주세요.';
+    const message = error.response?.data?.error?.message || error.response?.data?.message || '오류가 발생했습니다. 다시 시도해주세요.';
 
     if (error.response) {
       // Common error handling

@@ -49,7 +49,7 @@ const categories = {
 
 onMounted(() => {
   if (isEditMode.value) {
-    const tx = txStore.transactions.find(t => t.id === route.params.id);
+    const tx = txStore.transactions.find(t => String(t.id) === String(route.params.id));
     if (tx) {
       Object.assign(formData, tx);
       // Restore originalAmount if it exists (for editing Dutch Pay)
