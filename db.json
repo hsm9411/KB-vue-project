@@ -24,10 +24,7 @@
       "id": "G1",
       "name": "거지방 레이스",
       "limit": 2000000,
-      "memberIds": [
-        "1",
-        "2"
-      ]
+      "inviteCode": "SAVE12"
     }
   ],
   "goals": [
@@ -60,6 +57,7 @@
     {
       "id": "2",
       "userId": "1",
+      "groupId": "G1",
       "date": "2026-04-02",
       "type": "expense",
       "category": "식비",
@@ -70,6 +68,7 @@
     {
       "id": "3",
       "userId": "1",
+      "groupId": "G1",
       "date": "2026-04-03",
       "type": "expense",
       "category": "유흥",
