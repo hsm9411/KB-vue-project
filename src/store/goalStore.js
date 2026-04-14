@@ -17,7 +17,7 @@ export const useGoalStore = defineStore('goal', {
       }
     },
     async addGoal(data) {
-      const response = await goalApi.addGoal(data);
+      const response = await goalApi.addGoal({ ...data, isActive: true });
       this.goals.push(response.data);
     },
     async updateGoal(id, data) {
