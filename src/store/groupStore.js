@@ -68,7 +68,7 @@ export const useGroupStore = defineStore('group', {
           name,
           inviteCode,
           limit: 1000000,
-          memberIds: [userId]
+          isActive: true
         });
         this.group = response.data;
         return response.data;
@@ -83,10 +83,6 @@ export const useGroupStore = defineStore('group', {
         const group = groupsRes.data.find(g => g.inviteCode === inviteCode);
         if (!group) throw new Error('초대 코드가 유효하지 않습니다.');
 
-        if (!group.memberIds.includes(userId)) {
-          group.memberIds.push(userId);
-          await groupApi.updateGroup(group.id, group);
-        }
         this.group = group;
         return group;
       } finally {
@@ -96,10 +92,7 @@ export const useGroupStore = defineStore('group', {
     async leaveGroup(groupId, userId) {
       this.loading = true;
       try {
-        const groupRes = await groupApi.getGroup(groupId);
-        const group = groupRes.data;
-        group.memberIds = group.memberIds.filter(id => id !== userId);
-        await groupApi.updateGroup(groupId, group);
+        // Membership is handled via user.groupId, so store just clears local state
         this.group = null;
         this.members = [];
         this.memberSpendings = {};
