@@ -63,7 +63,7 @@ const handleSubmit = async () => {
   if (!formData.category) return toastStore.warning('카테고리를 선택하세요.');
   if (formData.amount <= 0) return toastStore.warning('금액을 입력하세요.');
 
-  const payload = { ...formData, userId: userStore.user.id };
+  const payload = { ...formData, userId: userStore.user.id, groupId: userStore.user.groupId || null };
   try {
     if (isEditMode.value) {
       await txStore.updateTransaction(route.params.id, payload);
