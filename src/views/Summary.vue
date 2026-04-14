@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useTxStore } from '../store/txStore';
 import BaseCard from '../components/ui/BaseCard.vue';
 import { Bar, Doughnut } from 'vue-chartjs';
+import { startOfMonth, endOfMonth, format, subMonths } from 'date-fns';
 import {
   Chart as ChartJS,
   Title,
@@ -18,22 +19,30 @@ ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale,
 
 const txStore = useTxStore();
 
-// Monthly Trend Data (Mocked for Demo Purpose)
-const barData = {
-  labels: ['2월', '3월', '4월(현재)'],
-  datasets: [
-    {
-      label: '수입',
-      backgroundColor: '#198754',
-      data: [2800000, 3100000, txStore.totalIncome]
-    },
-    {
-      label: '지출',
-      backgroundColor: '#dc3545',
-      data: [2100000, 1850000, txStore.totalExpense]
-    }
-  ]
-};
+// 현재 월 기준 최근 3개월 동적 계산
+const barData = computed(() => {
+  const now = new Date();
+  const months = [2, 1, 0].map(offset => subMonths(now, offset));
+
+  const monthly = months.map((d, i) => {
+    const start = format(startOfMonth(d), 'yyyy-MM-dd');
+    const end = format(endOfMonth(d), 'yyyy-MM-dd');
+    const txs = txStore.transactions.filter(t => t.date >= start && t.date <= end);
+    return {
+      label: `${d.getMonth() + 1}월${i === 2 ? '(현재)' : ''}`,
+      income: txs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0),
+      expense: txs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0),
+    };
+  });
+
+  return {
+    labels: monthly.map(m => m.label),
+    datasets: [
+      { label: '수입', backgroundColor: '#198754', data: monthly.map(m => m.income) },
+      { label: '지출', backgroundColor: '#dc3545', data: monthly.map(m => m.expense) },
+    ]
+  };
+});
 
 // Category Data
 const categoryMap = computed(() => {
