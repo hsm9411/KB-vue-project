@@ -39,7 +39,8 @@ export const useTxStore = defineStore('tx', {
       // Dutch Pay Logic
       let finalData = {
         ...data,
-        groupId: data.groupId || null
+        groupId: data.groupId || null,
+        isActive: true,
       };
 
       if (data.isDutchPay && data.dutchPayHeadcount > 1) {
