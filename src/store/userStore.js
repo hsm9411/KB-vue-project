@@ -1,25 +1,41 @@
 import { defineStore } from 'pinia';
 import userApi from '../api/userApi';
 
-export const useUserStore = defineStore('user', {
-  state: () => {
-    let savedUser = null;
-    try {
-      savedUser = JSON.parse(localStorage.getItem('user'));
-      // Data Migration: Convert legacy string IDs (e.g., 'G1' or 'g1') to numeric or null
-      if (savedUser && (String(savedUser.groupId).toUpperCase() === 'G1')) {
-        savedUser.groupId = 1;
-        localStorage.setItem('user', JSON.stringify(savedUser));
-      }
-    } catch (e) {
-      console.error('Failed to parse user from localStorage', e);
-    }
+const SESSION_DURATION_MS = 1000 * 60 * 60 * 2; // 2시간
 
-    return {
-      user: savedUser,
-      loading: false,
-    };
-  },
+function saveSession(user) {
+  const session = {
+    user,
+    expiresAt: Date.now() + SESSION_DURATION_MS,
+  };
+  localStorage.setItem('session', JSON.stringify(session));
+}
+
+function loadSession() {
+  try {
+    const raw = localStorage.getItem('session');
+    if (!raw) return null;
+    const session = JSON.parse(raw);
+    if (Date.now() > session.expiresAt) {
+      localStorage.removeItem('session');
+      return null;
+    }
+    // Data Migration: Convert legacy string IDs
+    if (session.user && String(session.user.groupId).toUpperCase() === 'G1') {
+      session.user.groupId = 1;
+    }
+    return session.user;
+  } catch (e) {
+    console.error('Failed to parse session from localStorage', e);
+    return null;
+  }
+}
+
+export const useUserStore = defineStore('user', {
+  state: () => ({
+    user: loadSession(),
+    loading: false,
+  }),
   getters: {
     isLoggedIn: (state) => !!state.user,
     currentUser: (state) => state.user,
@@ -32,7 +48,7 @@ export const useUserStore = defineStore('user', {
         if (response.data && response.data.length > 0) {
           const user = response.data[0];
           this.user = user;
-          localStorage.setItem('user', JSON.stringify(user));
+          saveSession(user);
           return true;
         }
         return false;
@@ -47,9 +63,10 @@ export const useUserStore = defineStore('user', {
           ...userData,
           expenseLimit: 1000000,
           groupId: null,
+          isActive: true,
         });
         this.user = response.data;
-        localStorage.setItem('user', JSON.stringify(this.user));
+        saveSession(this.user);
         return true;
       } finally {
         this.loading = false;
@@ -57,13 +74,13 @@ export const useUserStore = defineStore('user', {
     },
     logout() {
       this.user = null;
-      localStorage.removeItem('user');
+      localStorage.removeItem('session');
     },
     async updateProfile(data) {
       if (!this.user) return;
       const response = await userApi.updateUser(this.user.id, { ...this.user, ...data });
       this.user = response.data;
-      localStorage.setItem('user', JSON.stringify(this.user));
+      saveSession(this.user);
     }
   },
 });
